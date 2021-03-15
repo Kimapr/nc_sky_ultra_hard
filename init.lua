@@ -212,6 +212,12 @@ local function resolve(x,z)
 	return api.island_near({x=x,y=y,z=z})
 end
 
+function api.send_to_island(player)
+	local x,z=id_to_pos(ibplr[player:get_player_name()])
+	nodecore.inventory_dump(player)
+	player:set_pos(vector.add(resolve(x,z),{x=0,y=16,z=0}))
+end
+
 function api.give_island(player)
 	name=player:get_player_name()
 	local x,z=0,0
@@ -226,7 +232,7 @@ function api.give_island(player)
 	local is=pos_to_id(x,z)
 	ibplr[name]=is
 	ibpos[is]=name
-	player:set_pos(vector.add(resolve(x,z),{x=0,y=16,z=0}))
+	api.send_to_island(player)
 	dsave()
 end
 
@@ -238,6 +244,9 @@ nodecore.register_playerstep({
 		if minetest.check_player_privs(player, "interact") then
 			if not ibplr[name] then
 				api.give_island(player)
+			end
+			if player:get_pos().y<api.islands_ymin-50 and ibplr[name] then
+				api.send_to_island(player)
 			end
 		else
 			data.physics.speed = 0
