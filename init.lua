@@ -212,6 +212,24 @@ local function resolve(x,z)
 	return api.island_near({x=x,y=y,z=z})
 end
 
+function api.give_island(player)
+	name=player:get_player_name()
+	local x,z=0,0
+	while true do
+		local is=pos_to_id(x,z)
+		if not ibpos[is] then
+			break
+		else
+			x,z=x+math.random(-1,1),z+math.random(-1,1)
+		end
+	end
+	local is=pos_to_id(x,z)
+	ibplr[name]=is
+	ibpos[is]=name
+	player:set_pos(vector.add(resolve(x,z),{x=0,y=16,z=0}))
+	dsave()
+end
+
 nodecore.register_playerstep({
 	label = "ultra_sky",
 	priority = -100, 
@@ -219,24 +237,23 @@ nodecore.register_playerstep({
 		local name = player:get_player_name()
 		if minetest.check_player_privs(player, "interact") then
 			if not ibplr[name] then
-				local x,z=0,0
-				while true do
-					local is=pos_to_id(x,z)
-					if not ibpos[is] then
-						break
-					else
-						x,z=x+math.random(-1,1),z+math.random(-1,1)
-					end
-				end
-				local is=pos_to_id(x,z)
-				ibplr[name]=is
-				ibpos[is]=name
-				player:set_pos(vector.add(resolve(x,z),{x=0,y=16,z=0}))
-				dsave()
+				api.give_island(player)
 			end
 		else
 			data.physics.speed = 0
 			data.physics.gravity = 0
 		end
+	end
+})
+
+minetest.register_chatcommand("reset",{
+	description="Get a new island",
+	privs={interact=true},
+	func=function(name)
+		player=minetest.get_player_by_name(name)
+		if not player then
+			return
+		end
+		api.give_island(player)
 	end
 })
