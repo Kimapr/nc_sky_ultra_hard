@@ -1,6 +1,21 @@
 local api={}
 local modname = minetest.get_current_modname()
 _G[modname] = api
+local store=minetest.get_mod_storage()
+local ibplr,ibpos
+
+local function dload()
+	ibplr=minetest.deserialize(store:get_string("islands_by_player")) or {}
+	ibpos=minetest.deserialize(store:get_string("islands_by_pos")) or {}
+end
+
+local function dsave()
+	store:set_string("islands_by_player",minetest.serialize(ibplr))
+	store:set_string("islands_by_pos",minetest.serialize(ibpos))
+end
+
+dload()
+dsave()
 
 local math, minetest, pairs, tonumber, type, vector, nodecore
     = math, minetest, pairs, tonumber, type, vector, nodecore
@@ -13,7 +28,7 @@ local function numsetting(suff, def)
 	minetest.log(key .. " = " .. val)
 	api[suff] = val
 end
-numsetting("islands_grid", 100)
+numsetting("islands_grid", 200)
 numsetting("islands_ymin", 256 - api.islands_grid / 2)
 numsetting("islands_ymax", 256 + api.islands_grid / 2)
 numsetting("islands_xzextent", 25000)
@@ -180,21 +195,48 @@ minetest.register_on_generated(function(minp, maxp)
 		vm:write_to_map()
 	end)
 
-local dirs = nodecore.dirs()
+local function pos_to_id(x,z)
+	return math.floor(x).."_"..math.floor(z)
+end
 
-nodecore.register_limited_abm({
-	label = "stone melting",
-	interval = 1,
-	chance = 1,
-	nodenames = {"nc_terrain:stone"},
-	neighbors = {"group:lava"},
-	action = function(pos,node)
-		for _,v in pairs(dirs) do
-			if minetest.get_node(vector.add(pos,v)).name ~= "nc_terrain:lava_source" then
-				return
+local function id_to_pos(i)
+	local x,z=string.match(i,"(.-)_(.+)")
+	x,z=tonumber(x),tonumber(z)
+	assert(x,z)
+	return x,z
+end
+
+local function resolve(x,z)
+	x,z=x*api.islands_grid,z*api.islands_grid
+	y=(api.islands_ymin+api.islands_ymax)/2
+	return api.island_near({x=x,y=y,z=z})
+end
+
+nodecore.register_playerstep({
+	label = "ultra_sky",
+	priority = -100, 
+	action = function(player, data)
+		local name = player:get_player_name()
+		if minetest.check_player_privs(player, "interact") then
+			if not ibplr[name] then
+				local x,z=0,0
+				while true do
+					local is=pos_to_id(x,z)
+					if not ibpos[is] then
+						break
+					else
+						x,z=x+math.random(-1,1),z+math.random(-1,1)
+					end
+				end
+				local is=pos_to_id(x,z)
+				ibplr[name]=is
+				ibpos[is]=name
+				player:set_pos(vector.add(resolve(x,z),{x=0,y=16,z=0}))
+				dsave()
 			end
+		else
+			data.physics.speed = 0
+			data.physics.gravity = 0
 		end
-		minetest.set_node(pos,{name="nc_terrain:lava_source"})
-		nodecore.node_sound(pos,"place")
-  	end
+	end
 })
