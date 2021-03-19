@@ -248,7 +248,7 @@ nodecore.register_playerstep({
 			if player:get_pos().y<api.islands_ymin-50 and ibplr[name] then
 				api.send_to_island(player)
 			end
-		else
+		elseif not minetest.check_player_privs(player, "fly") then
 			data.physics.speed = 0
 			data.physics.gravity = 0
 		end
