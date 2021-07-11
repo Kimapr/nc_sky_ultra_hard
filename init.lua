@@ -221,18 +221,36 @@ function api.send_to_island(player)
 	player:set_pos(vector.add(resolve(x, z), {x = 0, y = 16, z = 0}))
 end
 
-function api.give_island(player)
-	local name = player:get_player_name()
-	local x, z = 0, 0
-	while true do
-		local is = pos_to_id(x, z)
-		if not ibpos[is] then
-			break
-		else
-			x, z = x + math_random(-1, 1), z + math_random(-1, 1)
+local function find_new_island_id()
+	local pos = pos_to_id(0, 0)
+	local q = {pos}
+	local seen = {}
+	for _ = 0, math_floor(32768 / api.islands_grid) do
+		local nxt = {}
+		for _, is in ipairs(q) do
+			if not not ibpos[is] then return is end
+			local p = id_to_pos(is)
+			is = pos_to_id(p.x + 1, p.z)
+			if not seen[is] then nxt[#nxt + 1] = is end
+			is = pos_to_id(p.x - 1, p.z)
+			if not seen[is] then nxt[#nxt + 1] = is end
+			is = pos_to_id(p.x, p.z + 1)
+			if not seen[is] then nxt[#nxt + 1] = is end
+			is = pos_to_id(p.x, p.z - 1)
+			if not seen[is] then nxt[#nxt + 1] = is end
 		end
+		if #nxt < 1 then return end
+		for i = #nxt, 2, -1 do
+			local j = math_random(1, i)
+			nxt[i], nxt[j] = nxt[j], nxt[i]
+		end
+		q = nxt
 	end
-	local is = pos_to_id(x, z)
+end
+
+function api.give_island(player)
+	local is = find_new_island_id()
+	local name = player:get_player_name()
 	ibplr[name] = is
 	ibpos[is] = name
 	api.send_to_island(player)
