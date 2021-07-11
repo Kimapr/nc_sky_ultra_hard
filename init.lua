@@ -242,7 +242,6 @@ end
 nodecore.register_playerstep({
 		label = "ultra_sky",
 		priority = -100,
-
 		action = function(player, data)
 			local name = player:get_player_name()
 			if minetest.check_player_privs(player, "interact") then
@@ -264,9 +263,7 @@ minetest.register_chatcommand("reset", {
 		privs = {interact = true},
 		func = function(name)
 			local player = minetest.get_player_by_name(name)
-			if not player then
-				return
-			end
+			if not player then return end
 			api.give_island(player)
 		end
 	})
