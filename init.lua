@@ -276,13 +276,3 @@ nodecore.register_playerstep({
 			end
 		end
 	})
-
-minetest.register_chatcommand("reset", {
-		description = "Get a new island",
-		privs = {interact = true},
-		func = function(name)
-			local player = minetest.get_player_by_name(name)
-			if not player then return end
-			api.give_island(player)
-		end
-	})
