@@ -217,6 +217,7 @@ end
 
 function api.send_to_island(player)
 	local x, z = id_to_pos(ibplr[player:get_player_name()])
+	player:set_hp(1, "fell off island")
 	nodecore.inventory_dump(player)
 	player:set_pos(vector.add(resolve(x, z), {x = 0, y = 16, z = 0}))
 end
@@ -228,15 +229,15 @@ local function find_new_island_id()
 	for _ = 0, math_floor(32768 / api.islands_grid) do
 		local nxt = {}
 		for _, is in ipairs(q) do
-			if not not ibpos[is] then return is end
-			local p = id_to_pos(is)
-			is = pos_to_id(p.x + 1, p.z)
+			if not ibpos[is] then return is end
+			local x, z = id_to_pos(is)
+			is = pos_to_id(x + 1, z)
 			if not seen[is] then nxt[#nxt + 1] = is end
-			is = pos_to_id(p.x - 1, p.z)
+			is = pos_to_id(x - 1, z)
 			if not seen[is] then nxt[#nxt + 1] = is end
-			is = pos_to_id(p.x, p.z + 1)
+			is = pos_to_id(x, z + 1)
 			if not seen[is] then nxt[#nxt + 1] = is end
-			is = pos_to_id(p.x, p.z - 1)
+			is = pos_to_id(x, z - 1)
 			if not seen[is] then nxt[#nxt + 1] = is end
 		end
 		if #nxt < 1 then return end
@@ -265,9 +266,9 @@ nodecore.register_playerstep({
 			if minetest.check_player_privs(player, "interact") then
 				if not ibplr[name] then
 					api.give_island(player)
-				end
-				if player:get_pos().y < api.islands_ymin -50 and ibplr[name] then
-					api.send_to_island(player)
+				elseif player:get_pos().y < api.islands_ymin -50
+				and ibplr[name] then
+					api.give_island(player)
 				end
 			elseif not minetest.check_player_privs(player, "fly") then
 				data.physics.speed = 0
