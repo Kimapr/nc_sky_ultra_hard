@@ -1,26 +1,30 @@
-local api={}
+-- LUALOCALS < ---------------------------------------------------------
+local assert, ipairs, math, minetest, nodecore, pairs, string,
+      tonumber, type, vector
+    = assert, ipairs, math, minetest, nodecore, pairs, string,
+      tonumber, type, vector
+local math_floor, math_random, string_format, string_match
+    = math.floor, math.random, string.format, string.match
+-- LUALOCALS > ---------------------------------------------------------
+
+local api = {}
 local modname = minetest.get_current_modname()
 _G[modname] = api
-local store=minetest.get_mod_storage()
-local ibplr,ibpos
+local store = minetest.get_mod_storage()
+local ibplr, ibpos
 
 local function dload()
-	ibplr=minetest.deserialize(store:get_string("islands_by_player")) or {}
-	ibpos=minetest.deserialize(store:get_string("islands_by_pos")) or {}
+	ibplr = minetest.deserialize(store:get_string("islands_by_player")) or {}
+	ibpos = minetest.deserialize(store:get_string("islands_by_pos")) or {}
 end
 
 local function dsave()
-	store:set_string("islands_by_player",minetest.serialize(ibplr))
-	store:set_string("islands_by_pos",minetest.serialize(ibpos))
+	store:set_string("islands_by_player", minetest.serialize(ibplr))
+	store:set_string("islands_by_pos", minetest.serialize(ibpos))
 end
 
 dload()
 dsave()
-
-local math, minetest, pairs, tonumber, type, vector, nodecore
-    = math, minetest, pairs, tonumber, type, vector, nodecore
-local math_floor
-    = math.floor
 
 local function numsetting(suff, def)
 	local key = modname .. "_" .. suff
@@ -77,93 +81,92 @@ function api.island_near(pos, adjust)
 	return ipos
 end
 
-
-local slices={
-{
-	".......",
-	".......",
-	".......",
-	"...m...",
-	".......",
-	".......",
-	"......."
-},
-{
-	".......",
-	".......",
-	"...d...",
-	"..dpd..",
-	"...d...",
-	".......",
-	"......."
-},
-{
-	".......",
-	"...d...",
-	"..dpd..",
-	".dpppd.",
-	"..dpd..",
-	"...d...",
-	"......."
-},
-{
-	".......",
-	"...l...",
-	"..lcl..",
-	".lcccl.",
-	"..lcl..",
-	"...l...",
-	"......."
-},
-{
-	".......",
-	"..dld..",
-	".ddsdd.",
-	".lsssl.",
-	".ddsdd.",
-	"..dld..",
-	"......."
-},
-{
-	"...d...",
-	".ddldd.",
-	".ddwdd.",
-	"dlwSwld",
-	".ddwdd.",
-	".ddldd.",
-	"...d..."
-},
-{
-	"..ddd..",
-	".ddddd.",
-	"dddwddd",
-	"ddwWwdd",
-	"dddwddd",
-	".ddddd.",
-	"..ddd.."
-},
-{
-	"..ggg..",
-	".ggggg.",
-	"ggggggg",
-	"ggggggg",
-	"ggggggg",
-	".ggggg.",
-	"..ggg.."
-}}
-api.isle_schematic=nodecore.ezschematic(
+local slices = {
 	{
-		["."]={name="air",prob=0},
-		m={name="nc_lode:ore",prob=255},
-		l={name="nc_lux:stone",prob=255},
-		p={name="nc_terrain:lava_source",prob=255},
-		c={name="nc_terrain:cobble",prob=255},
-		s={name="nc_terrain:sand",prob=255},
-		S={name="nc_sponge:sponge_living",prob=255},
-		w={name="nc_terrain:water_flowing",param2=15,prob=255},
-		W={name="nc_terrain:water_source",prob=255},
-		d={name="nc_terrain:dirt",prob=255},
-		g={name="nc_terrain:dirt_with_grass",prob=255}
+		".......",
+		".......",
+		".......",
+		"...m...",
+		".......",
+		".......",
+		"......."
+	},
+	{
+		".......",
+		".......",
+		"...d...",
+		"..dpd..",
+		"...d...",
+		".......",
+		"......."
+	},
+	{
+		".......",
+		"...d...",
+		"..dpd..",
+		".dpppd.",
+		"..dpd..",
+		"...d...",
+		"......."
+	},
+	{
+		".......",
+		"...l...",
+		"..lcl..",
+		".lcccl.",
+		"..lcl..",
+		"...l...",
+		"......."
+	},
+	{
+		".......",
+		"..dld..",
+		".ddsdd.",
+		".lsssl.",
+		".ddsdd.",
+		"..dld..",
+		"......."
+	},
+	{
+		"...d...",
+		".ddldd.",
+		".ddwdd.",
+		"dlwSwld",
+		".ddwdd.",
+		".ddldd.",
+		"...d..."
+	},
+	{
+		"..ddd..",
+		".ddddd.",
+		"dddwddd",
+		"ddwWwdd",
+		"dddwddd",
+		".ddddd.",
+		"..ddd.."
+	},
+	{
+		"..ggg..",
+		".ggggg.",
+		"ggggggg",
+		"ggggggg",
+		"ggggggg",
+		".ggggg.",
+		"..ggg.."
+}}
+api.isle_schematic = nodecore.ezschematic(
+	{
+		["."] = {name = "air", prob = 0},
+		m = {name = "nc_lode:ore", prob = 255},
+		l = {name = "nc_lux:stone", prob = 255},
+		p = {name = "nc_terrain:lava_source", prob = 255},
+		c = {name = "nc_terrain:cobble", prob = 255},
+		s = {name = "nc_terrain:sand", prob = 255},
+		S = {name = "nc_sponge:sponge_living", prob = 255},
+		w = {name = "nc_terrain:water_flowing", param2 = 15, prob = 255},
+		W = {name = "nc_terrain:water_source", prob = 255},
+		d = {name = "nc_terrain:dirt", prob = 255},
+		g = {name = "nc_terrain:dirt_with_grass", prob = 255}
 	},
 	slices
 )
@@ -195,74 +198,117 @@ minetest.register_on_generated(function(minp, maxp)
 		vm:write_to_map()
 	end)
 
-local function pos_to_id(x,z)
-	return math.floor(x).."_"..math.floor(z)
+local function pos_to_id(x, z)
+	return math.floor(x) .. "_" .. math.floor(z)
 end
 
 local function id_to_pos(i)
-	local x,z=string.match(i,"(.-)_(.+)")
-	x,z=tonumber(x),tonumber(z)
-	assert(x,z)
-	return x,z
+	local x, z = string_match(i, "(.-)_(.+)")
+	x, z = tonumber(x), tonumber(z)
+	assert(x, z)
+	return x, z
 end
 
-local function resolve(x,z)
-	x,z=x*api.islands_grid,z*api.islands_grid
-	y=(api.islands_ymin+api.islands_ymax)/2
-	return api.island_near({x=x,y=y,z=z})
+local function resolve(x, z)
+	x, z = x * api.islands_grid, z * api.islands_grid
+	local y = (api.islands_ymin + api.islands_ymax) / 2
+	return api.island_near({x = x, y = y, z = z})
+end
+
+local function unresolve(pos)
+	pos = api.island_grid_round(pos)
+	return pos.x / api.islands_grid, pos.z / api.islands_grid
 end
 
 function api.send_to_island(player)
-	local x,z=id_to_pos(ibplr[player:get_player_name()])
+	local x, z = id_to_pos(ibplr[player:get_player_name()])
+	player:set_hp(1, "fell off island")
 	nodecore.inventory_dump(player)
-	player:set_pos(vector.add(resolve(x,z),{x=0,y=16,z=0}))
+	player:set_pos(vector.add(resolve(x, z), {x = 0, y = 16, z = 0}))
+end
+
+local function find_new_island_id()
+	local pos = pos_to_id(0, 0)
+	local q = {pos}
+	local seen = {}
+	for _ = 0, math_floor(32768 / api.islands_grid) do
+		local nxt = {}
+		for _, is in ipairs(q) do
+			if not ibpos[is] then return is end
+			local x, z = id_to_pos(is)
+			is = pos_to_id(x + 1, z)
+			if not seen[is] then nxt[#nxt + 1] = is end
+			is = pos_to_id(x - 1, z)
+			if not seen[is] then nxt[#nxt + 1] = is end
+			is = pos_to_id(x, z + 1)
+			if not seen[is] then nxt[#nxt + 1] = is end
+			is = pos_to_id(x, z - 1)
+			if not seen[is] then nxt[#nxt + 1] = is end
+		end
+		if #nxt < 1 then return end
+		for i = #nxt, 2, -1 do
+			local j = math_random(1, i)
+			nxt[i], nxt[j] = nxt[j], nxt[i]
+		end
+		q = nxt
+	end
 end
 
 function api.give_island(player)
-	name=player:get_player_name()
-	local x,z=0,0
-	while true do
-		local is=pos_to_id(x,z)
-		if not ibpos[is] then
-			break
-		else
-			x,z=x+math.random(-1,1),z+math.random(-1,1)
-		end
-	end
-	local is=pos_to_id(x,z)
-	ibplr[name]=is
-	ibpos[is]=name
+	local is = find_new_island_id()
+	local name = player:get_player_name()
+	ibplr[name] = is
+	ibpos[is] = name
 	api.send_to_island(player)
 	dsave()
+	local x, z = id_to_pos(is)
+	nodecore.log("action", string_format("%s assigned to"
+			.. " island (%d,%d) at %s", name, x, z,
+			minetest.pos_to_string(resolve(x, z))))
 end
 
 nodecore.register_playerstep({
-	label = "ultra_sky",
-	priority = -100, 
-	action = function(player, data)
-		local name = player:get_player_name()
-		if minetest.check_player_privs(player, "interact") then
-			if not ibplr[name] then
-				api.give_island(player)
+		label = "ultra_sky",
+		priority = -100,
+		action = function(player, data)
+			if data.sky and data.sky.textures then
+				local bot = data.sky.textures[2]
+				if bot then
+					data.sky.textures[2] = bot
+					.. "^[multiply:#ff0000"
+					.. "^" .. modname .. "_skybox_swirl.png"
+				end
+				for i = 3, 6 do
+					local side = data.sky.textures[i]
+					if side then
+						data.sky.textures[i] = side
+						.. "^[multiply:#ff0000"
+						.. "^(" .. side .. "^[mask:"
+						.. modname .. "_skybox_mask.png)"
+					end
+				end
 			end
-			if player:get_pos().y<api.islands_ymin-50 and ibplr[name] then
-				api.send_to_island(player)
+			local name = player:get_player_name()
+			if minetest.check_player_privs(player, "interact") then
+				if not ibplr[name] then
+					return api.give_island(player)
+				end
+				local pos = player:get_pos()
+				if pos.y < api.islands_ymin -50 then
+					nodecore.log("action", name .. " fell")
+					return api.give_island(player)
+				end
+				local is = pos_to_id(unresolve(pos))
+				if is ~= ibplr[name] and not ibpos[is] then
+					ibpos[is] = name
+					local x, z = id_to_pos(is)
+					nodecore.log("action", string_format(
+							"%s captured island (%d,%d)",
+							name, x, z))
+				end
+			elseif not minetest.check_player_privs(player, "fly") then
+				data.physics.speed = 0
+				data.physics.gravity = 0
 			end
-		elseif not minetest.check_player_privs(player, "fly") then
-			data.physics.speed = 0
-			data.physics.gravity = 0
 		end
-	end
-})
-
-minetest.register_chatcommand("reset",{
-	description="Get a new island",
-	privs={interact=true},
-	func=function(name)
-		player=minetest.get_player_by_name(name)
-		if not player then
-			return
-		end
-		api.give_island(player)
-	end
-})
+	})
