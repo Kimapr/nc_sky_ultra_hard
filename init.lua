@@ -1,10 +1,10 @@
 -- LUALOCALS < ---------------------------------------------------------
-local assert, math, minetest, nodecore, pairs, string, tonumber, type,
-      vector
-    = assert, math, minetest, nodecore, pairs, string, tonumber, type,
-      vector
-local math_floor, math_random, string_match
-    = math.floor, math.random, string.match
+local assert, ipairs, math, minetest, nodecore, pairs, string,
+      tonumber, type, vector
+    = assert, ipairs, math, minetest, nodecore, pairs, string,
+      tonumber, type, vector
+local math_floor, math_random, string_format, string_match
+    = math.floor, math.random, string.format, string.match
 -- LUALOCALS > ---------------------------------------------------------
 
 local api = {}
@@ -215,6 +215,11 @@ local function resolve(x, z)
 	return api.island_near({x = x, y = y, z = z})
 end
 
+local function unresolve(pos)
+	pos = api.island_grid_round(pos)
+	return pos.x / api.islands_grid, pos.z / api.islands_grid
+end
+
 function api.send_to_island(player)
 	local x, z = id_to_pos(ibplr[player:get_player_name()])
 	player:set_hp(1, "fell off island")
@@ -256,6 +261,10 @@ function api.give_island(player)
 	ibpos[is] = name
 	api.send_to_island(player)
 	dsave()
+	local x, z = id_to_pos(is)
+	nodecore.log("action", string_format("%s assigned to"
+			.. " island (%d,%d) at %s", name, x, z,
+			minetest.pos_to_string(resolve(x, z))))
 end
 
 nodecore.register_playerstep({
@@ -274,7 +283,7 @@ nodecore.register_playerstep({
 					if side then
 						data.sky.textures[i] = side
 						.. "^[multiply:#ff0000"
-						.. "^(" .. side .. "^[ mask:"
+						.. "^(" .. side .. "^[mask:"
 						.. modname .. "_skybox_mask.png)"
 					end
 				end
@@ -282,10 +291,20 @@ nodecore.register_playerstep({
 			local name = player:get_player_name()
 			if minetest.check_player_privs(player, "interact") then
 				if not ibplr[name] then
-					api.give_island(player)
-				elseif player:get_pos().y < api.islands_ymin -50
-				and ibplr[name] then
-					api.give_island(player)
+					return api.give_island(player)
+				end
+				local pos = player:get_pos()
+				if pos.y < api.islands_ymin -50 then
+					nodecore.log("action", name .. " fell")
+					return api.give_island(player)
+				end
+				local is = pos_to_id(unresolve(pos))
+				if is ~= ibplr[name] and not ibpos[is] then
+					ibpos[is] = name
+					local x, z = id_to_pos(is)
+					nodecore.log("action", string_format(
+							"%s captured island (%d,%d)",
+							name, x, z))
 				end
 			elseif not minetest.check_player_privs(player, "fly") then
 				data.physics.speed = 0
