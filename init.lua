@@ -262,6 +262,23 @@ nodecore.register_playerstep({
 		label = "ultra_sky",
 		priority = -100,
 		action = function(player, data)
+			if data.sky and data.sky.textures then
+				local bot = data.sky.textures[2]
+				if bot then
+					data.sky.textures[2] = bot
+					.. "^[multiply:#ff0000"
+					.. "^" .. modname .. "_skybox_swirl.png"
+				end
+				for i = 3, 6 do
+					local side = data.sky.textures[i]
+					if side then
+						data.sky.textures[i] = side
+						.. "^[multiply:#ff0000"
+						.. "^(" .. side .. "^[ mask:"
+						.. modname .. "_skybox_mask.png)"
+					end
+				end
+			end
 			local name = player:get_player_name()
 			if minetest.check_player_privs(player, "interact") then
 				if not ibplr[name] then
