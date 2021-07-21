@@ -83,84 +83,56 @@ end
 
 local slices = {
 	{
-		".......",
-		".......",
-		".......",
-		"...m...",
-		".......",
-		".......",
-		"......."
+		".....",
+		".....",
+		"..c..",
+		".....",
+		"....."
 	},
 	{
-		".......",
-		".......",
-		"...d...",
-		"..dpd..",
-		"...d...",
-		".......",
-		"......."
+		".....",
+		"..l..",
+		".lSl.",
+		"..l..",
+		"....."
 	},
 	{
-		".......",
-		"...d...",
-		"..dpd..",
-		".dpppd.",
-		"..dpd..",
-		"...d...",
-		"......."
+		".....",
+		"..l..",
+		".lml.",
+		"..l..",
+		"....."
 	},
 	{
-		".......",
-		"...l...",
-		"..lcl..",
-		".lcccl.",
-		"..lcl..",
-		"...l...",
-		"......."
+		"..l..",
+		".lpl.",
+		"lpspl",
+		".lpl.",
+		"..l.."
 	},
 	{
-		".......",
-		"..dld..",
-		".ddsdd.",
-		".lsssl.",
-		".ddsdd.",
-		"..dld..",
-		"......."
+		".PPP.",
+		"PPPPP",
+		"PPSPP",
+		"PPPPP",
+		".PPP."
 	},
 	{
-		"...d...",
-		".ddldd.",
-		".ddwdd.",
-		"dlwSwld",
-		".ddwdd.",
-		".ddldd.",
-		"...d..."
+		".....",
+		".....",
+		"..d..",
+		".....",
+		"....."
 	},
-	{
-		"..ddd..",
-		".ddddd.",
-		"dddwddd",
-		"ddwWwdd",
-		"dddwddd",
-		".ddddd.",
-		"..ddd.."
-	},
-	{
-		"..ggg..",
-		".ggggg.",
-		"ggggggg",
-		"ggggggg",
-		"ggggggg",
-		".ggggg.",
-		"..ggg.."
-}}
+}
 api.isle_schematic = nodecore.ezschematic(
 	{
 		["."] = {name = "air", prob = 0},
 		m = {name = "nc_lode:ore", prob = 255},
 		l = {name = "nc_lux:stone", prob = 255},
-		p = {name = "nc_terrain:lava_source", prob = 255},
-		c = {name = "nc_terrain:cobble", prob = 255},
+		p = {name = "nc_igneous:amalgam", prob = 255},
+		P = {name = "nc_igneous:pumice", prob = 255},
+		c = {name = "nc_terrain:stone", prob = 255},
 		s = {name = "nc_terrain:sand", prob = 255},
 		S = {name = "nc_sponge:sponge_living", prob = 255},
 		w = {name = "nc_terrain:water_flowing", param2 = 15, prob = 255},
@@ -186,9 +158,9 @@ minetest.register_on_generated(function(minp, maxp)
 						pos.z = pos.z - 2
 						minetest.place_schematic_on_vmanip(vm, pos,
 							nodecore.tree_schematic)
-						pos.x = pos.x - 1
-						pos.z = pos.z - 1
-						pos.y = pos.y - 8
+						pos.x = pos.x
+						pos.z = pos.z
+						pos.y = pos.y - 6
 						minetest.place_schematic_on_vmanip(vm, pos,
 							api.isle_schematic)
 					end
