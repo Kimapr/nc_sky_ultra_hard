@@ -1,8 +1,8 @@
 -- LUALOCALS < ---------------------------------------------------------
-local assert, ipairs, math, minetest, nodecore, pairs, string,
-      tonumber, type, vector
-    = assert, ipairs, math, minetest, nodecore, pairs, string,
-      tonumber, type, vector
+local ItemStack, assert, ipairs, math, minetest, nodecore, pairs,
+      string, tonumber, type, vector
+    = ItemStack, assert, ipairs, math, minetest, nodecore, pairs,
+      string, tonumber, type, vector
 local math_floor, math_random, string_format, string_match
     = math.floor, math.random, string.format, string.match
 -- LUALOCALS > ---------------------------------------------------------
@@ -35,7 +35,8 @@ end
 numsetting("islands_grid", 200)
 numsetting("islands_ymin", 256 - api.islands_grid / 2)
 numsetting("islands_ymax", 256 + api.islands_grid / 2)
-numsetting("islands_xzextent", 25000)
+numsetting("barrier_ymax", api.islands_ymin - 50)
+numsetting("barrier_ymin", api.islands_ymin - 100)
 
 local perlins = {x = 0, y = 1, z = 2}
 minetest.after(0, function()
@@ -170,8 +171,75 @@ minetest.register_on_generated(function(minp, maxp)
 		vm:write_to_map()
 	end)
 
+local barriername = modname .. ":barrier"
+minetest.register_node(barriername, {
+		description = "SkyRealm Barrier",
+		drawtype = "airlike",
+		walkable = false,
+		climbable = false,
+		pointable = false,
+		buildable_to = false,
+		paramtype = "light",
+		sunlight_propagates = true
+	})
+local barrierid = minetest.get_content_id(barriername)
+nodecore.register_mapgen_shared({
+		label = "skyrealm barrier",
+		enabled = true, -- including singlenode
+		func = function(minp, maxp, area, data)
+			local barriermax = api.barrier_ymax
+			if minp.y > barriermax then return end
+
+			local ai = area.index
+
+			local maxy = barriermax
+			if maxp.y < maxy then maxy = maxp.y end
+			print(maxy)
+
+			for z = minp.z, maxp.z do
+				for y = minp.y, maxy do
+					local offs = ai(area, 0, y, z)
+					for x = minp.x, maxp.x do
+						if y < barriermax or (x + z) % 2 == 0 then
+							data[offs + x] = barrierid
+						end
+					end
+				end
+			end
+		end
+	})
+
+local function destroycheck(getname)
+	return function(self)
+		local obj = self.object
+		local pos = obj and obj:get_pos()
+		if (not pos) or (pos.y >= api.barrier_ymax) then return end
+		local def = minetest.registered_items[getname(self)]
+		if not def then return obj:remove() end
+		nodecore.digparticles(def, {
+				time = 0.05,
+				amount = 50,
+				minpos = pos,
+				maxpos = pos,
+				minvel = {x = -5, y = -5, z = -5},
+				maxvel = {x = 5, y = 5, z = 5},
+				minexptime = 0.5,
+				maxexptime = 1,
+				minsize = 1,
+				maxsize = 8
+			})
+		return obj:remove()
+	end
+end
+nodecore.register_item_entity_step(destroycheck(function(self)
+			return ItemStack(self.itemstring):get_name()
+		end))
+nodecore.register_falling_node_step(destroycheck(function(self)
+			return self.node.name
+		end))
+
 local function pos_to_id(x, z)
-	return math.floor(x) .. "_" .. math.floor(z)
+	return math_floor(x) .. "_" .. math_floor(z)
 end
 
 local function id_to_pos(i)
@@ -266,9 +334,11 @@ nodecore.register_playerstep({
 					return api.give_island(player)
 				end
 				local pos = player:get_pos()
-				if pos.y < api.islands_ymin -50 then
+				if pos.y < api.barrier_ymin then
 					nodecore.log("action", name .. " fell")
 					return api.give_island(player)
+				elseif pos.y < api.barrier_ymax then
+					nodecore.inventory_dump(player)
 				end
 				local is = pos_to_id(unresolve(pos))
 				if is ~= ibplr[name] and not ibpos[is] then
