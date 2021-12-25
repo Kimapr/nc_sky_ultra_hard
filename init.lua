@@ -368,7 +368,9 @@ do
 				{match = v.node}
 			},
 			after = function(pos)
-				nodecore.soaking_abm_push(pos, v.f, v.c)
+				if math.random()>0.9 then
+					nodecore.soaking_abm_push(pos, v.f, v.c)
+				end
 			end
 		})
 	end
