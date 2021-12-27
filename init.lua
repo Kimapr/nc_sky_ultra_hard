@@ -400,6 +400,11 @@ end
 
 function api.send_to_island(player)
 	local x, z = id_to_pos(ibplr[player:get_player_name()])
+	for _, fx in pairs(nodecore.registered_healthfx) do
+		if fx.setqty then
+			fx.setqty(player, 0)
+		end
+	end
 	player:set_hp(1, "fell off island")
 	nodecore.inventory_dump(player)
 	player:set_pos(vector.add(resolve(x, z), {x = 0, y = 16, z = 0}))
