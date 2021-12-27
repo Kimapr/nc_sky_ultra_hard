@@ -478,6 +478,9 @@ nodecore.register_playerstep({
 				end
 				local pos = player:get_pos()
 				if pos.y < api.islands_ymin -50 then
+					nodecore.addphealth(player,-0.1,"void")
+				end
+				if pos.y < api.islands_ymin -100 then
 					nodecore.log("action", name .. " fell")
 					return api.give_island(player)
 				end
