@@ -553,6 +553,7 @@ nodecore.register_playerstep({
 				local is = pos_to_id(unresolve(pos))
 				if is ~= ibplr[name] and not ibpos[is] then
 					ibpos[is] = name
+					dsave()
 					local x, z = id_to_pos(is)
 					nodecore.log("action", string_format(
 							"%s captured island (%d,%d)",
