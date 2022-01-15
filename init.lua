@@ -421,28 +421,6 @@ nodecore.register_falling_node_step(destroycheck(function(self)
 			return self.node.name
 		end))
 
-do
-	local plants = {
-		sprout = {node = "nc_tree:eggcorn_planted", f="eggcorn", c=100000},
-		peat = {node = "nc_tree:peat", f="compost", c=2500}
-	}
-	for k,v in pairs(plants) do
-		nodecore.register_craft({
-			label = "cmon do something "..k,
-			action = "pummel",
-			toolgroups = {crumbly = 1},
-			nodes = {
-				{match = v.node}
-			},
-			after = function(pos)
-				if math.random()>0.9 then
-					nodecore.soaking_abm_push(pos, v.f, v.c)
-				end
-			end
-		})
-	end
-end
-
 local function pos_to_id(x, z)
 	return math_floor(x) .. "_" .. math_floor(z)
 end
