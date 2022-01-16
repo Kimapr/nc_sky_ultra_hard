@@ -253,9 +253,13 @@ function api.send_to_island(player)
 			fx.setqty(player, 0)
 		end
 	end
-	player:set_hp(1, "fell off island")
 	nodecore.inventory_dump(player)
-	player:set_pos(vector.add(resolve(x, z), {x = 0, y = 16, z = 0}))
+	local name=player:get_player_name()
+	minetest.after(0,function()
+		minetest.registered_chatcommands["give"].func("",name .. " nc_tree:eggcorn 2")
+		minetest.registered_chatcommands["give"].func("",name .. " nc_tree:stick 3")
+	end)
+	player:set_pos(vector.add(resolve(x, z), {x = 0, y = 8, z = 0}))
 end
 
 local function find_new_island_id()
