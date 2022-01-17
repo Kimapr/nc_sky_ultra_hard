@@ -82,11 +82,64 @@ function api.island_near(pos, adjust)
 	return ipos
 end
 
+local treestarter = modname .. ":treestarter"
+
+minetest.register_node(treestarter, {
+		drawtype = "airlike",
+		walkable = false,
+		climbable = false,
+		pointable = false,
+		buildable_to = false,
+		paramtype = "light",
+		sunlight_propagates = true
+	})
+
+local function treestart(pos)
+	-- To be placed at a very specific place on island relative to tree.
+	local found = nodecore.find_nodes_in_area(
+		{x = pos.x - 0, y = pos.y + 2, z = pos.z - 2},
+		{x = pos.x + 4, y = pos.y + 7, z = pos.z + 2},
+	"nc_tree:leaves")
+	if #found < 5 then return end
+	for i = #found, 2, -1 do
+		local j = math_random(1, i)
+		found[i], found[j] = found[j], found[i]
+	end
+	for i = 1, 2 do
+		minetest.get_meta(found[i]):set_string("leaf_decay_forced",
+			minetest.serialize({
+					name = "air",
+					item = "nc_tree:eggcorn"
+				}))
+	end
+	for i = 3, 5 do
+		minetest.get_meta(found[i]):set_string("leaf_decay_forced",
+			minetest.serialize({
+					name = "nc_tree:stick"
+				}))
+	end
+	minetest.remove_node(pos)
+end
+
+minetest.register_abm({
+		label = treestarter,
+		interval = 1,
+		chance = 1,
+		nodenames = {treestarter},
+		action = treestart
+	})
+minetest.register_lbm({
+		name = treestarter,
+		nodenames = {treestarter},
+		run_at_every_load = true,
+		action = treestart
+	})
+
 local slices = {
 	{
 		".....",
 		"..l..",
-		".plp.",
+		"tplp.",
 		"..p..",
 		".....",
 	},
@@ -122,6 +175,7 @@ api.isle_schematic = nodecore.ezschematic(
 		s = {name = "nc_terrain:sand", prob = 255},
 		S = {name = "nc_sponge:sponge_living", prob = 255},
 		g = {name = "nc_tree:humus", prob = 255},
+		t = {name = treestarter, prob = 255}
 	},
 	slices
 )
@@ -254,11 +308,6 @@ function api.send_to_island(player)
 		end
 	end
 	nodecore.inventory_dump(player)
-	local name=player:get_player_name()
-	minetest.after(0,function()
-		minetest.registered_chatcommands["give"].func("",name .. " nc_tree:eggcorn 2")
-		minetest.registered_chatcommands["give"].func("",name .. " nc_tree:stick 3")
-	end)
 	player:set_pos(vector.add(resolve(x, z), {x = 0, y = 8, z = 0}))
 end
 
