@@ -1,6 +1,8 @@
 -- LUALOCALS < ---------------------------------------------------------
-local ItemStack, minetest, nodecore
-    = ItemStack, minetest, nodecore
+local ItemStack, minetest, nodecore, string
+    = ItemStack, minetest, nodecore, string
+local string_format, string_gsub
+    = string.format, string.gsub
 -- LUALOCALS > ---------------------------------------------------------
 
 local modname = minetest.get_current_modname()
@@ -11,7 +13,12 @@ local function destroycheck(getname)
 		local obj = self.object
 		local pos = obj and obj:get_pos()
 		if (not pos) or (pos.y >= api.barrier_ymax) then return end
-		local def = minetest.registered_items[getname(self)]
+		local itemname = getname(self)
+		nodecore.log("action", string_format(
+				"%s %q at %s lost to the void",
+				string_gsub(self.name, "__builtin:", ""),
+				itemname, minetest.pos_to_string(pos, 0)))
+		local def = minetest.registered_items[itemname]
 		if not def then return obj:remove() end
 		nodecore.digparticles(def, {
 				time = 0.05,

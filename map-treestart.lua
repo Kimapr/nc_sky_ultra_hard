@@ -1,8 +1,8 @@
 -- LUALOCALS < ---------------------------------------------------------
-local math, minetest, nodecore
-    = math, minetest, nodecore
-local math_random
-    = math.random
+local math, minetest, nodecore, string
+    = math, minetest, nodecore, string
+local math_random, string_format
+    = math.random, string.format
 -- LUALOCALS > ---------------------------------------------------------
 
 local modname = minetest.get_current_modname()
@@ -19,6 +19,14 @@ minetest.register_node(treestarter, {
 		sunlight_propagates = true
 	})
 
+local function setdecay(pos, tbl)
+	nodecore.log("action", string_format(
+			"leaves at %s predetermined as %q",
+			minetest.pos_to_string(pos), tbl.item or tbl.name))
+	minetest.get_meta(pos):set_string("leaf_decay_forced",
+		minetest.serialize(tbl))
+end
+
 local function treestart(pos)
 	-- To be placed at a very specific place on island relative to tree.
 	local found = nodecore.find_nodes_in_area(
@@ -31,17 +39,15 @@ local function treestart(pos)
 		found[i], found[j] = found[j], found[i]
 	end
 	for i = 1, 2 do
-		minetest.get_meta(found[i]):set_string("leaf_decay_forced",
-			minetest.serialize({
-					name = "air",
-					item = "nc_tree:eggcorn"
-				}))
+		setdecay(found[i], {
+				name = "air",
+				item = "nc_tree:eggcorn"
+			})
 	end
 	for i = 3, 5 do
-		minetest.get_meta(found[i]):set_string("leaf_decay_forced",
-			minetest.serialize({
-					name = "nc_tree:stick"
-				}))
+		setdecay(found[i], {
+				name = "nc_tree:stick"
+			})
 	end
 	minetest.remove_node(pos)
 end

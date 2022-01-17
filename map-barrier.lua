@@ -30,7 +30,6 @@ nodecore.register_mapgen_shared({
 
 			local maxy = barriermax
 			if maxp.y < maxy then maxy = maxp.y end
-			print(maxy)
 
 			for z = minp.z, maxp.z do
 				for y = minp.y, maxy do
