@@ -1,7 +1,7 @@
 -- LUALOCALS < ---------------------------------------------------------
-local assert, ipairs, math, minetest, nodecore, pairs, string,
+local assert, ipairs, math, minetest, next, nodecore, pairs, string,
       tonumber, vector
-    = assert, ipairs, math, minetest, nodecore, pairs, string,
+    = assert, ipairs, math, minetest, next, nodecore, pairs, string,
       tonumber, vector
 local math_floor, math_random, string_format, string_match
     = math.floor, math.random, string.format, string.match
@@ -11,14 +11,16 @@ local modname = minetest.get_current_modname()
 local api = _G[modname]
 
 local store = minetest.get_mod_storage()
-local ibplr, ibpos
+local tbplr, ibplr, ibpos
 
 local function dload()
+	tbplr = minetest.deserialize(store:get_string("next_reassign_by_player")) or {}
 	ibplr = minetest.deserialize(store:get_string("islands_by_player")) or {}
 	ibpos = minetest.deserialize(store:get_string("islands_by_pos")) or {}
 end
 
 local function dsave()
+	store:set_string("next_reassign_by_player", minetest.serialize(tbplr))
 	store:set_string("islands_by_player", minetest.serialize(ibplr))
 	store:set_string("islands_by_pos", minetest.serialize(ibpos))
 end
@@ -86,17 +88,32 @@ local function find_new_island_id()
 	end
 end
 
+function api.get_island_ttl(name)
+	local nextime = tbplr[name] or 0
+	if nextime > nodecore.gametime then
+		return nextime - nodecore.gametime
+	end
+	return 0
+end
+
 function api.give_island(player)
-	local is = find_new_island_id()
 	local name = player:get_player_name()
-	ibplr[name] = is
-	ibpos[is] = name
+	local ttl = api.get_island_ttl(name)
+	if ttl > 0 then
+		nodecore.log("action", string_format("%s reusing island, ttl %ds",
+				name, ttl))
+	else
+		local is = find_new_island_id()
+		local x, z = id_to_pos(is)
+		nodecore.log("action", string_format("%s assigned to"
+				.. " island (%d,%d) at %s", name, x, z,
+				minetest.pos_to_string(resolve(x, z))))
+		ibplr[name] = is
+		ibpos[is] = name
+		tbplr[name] = nodecore.gametime + api.assign_ttl
+	end
 	api.send_to_island(player)
 	dsave()
-	local x, z = id_to_pos(is)
-	nodecore.log("action", string_format("%s assigned to"
-			.. " island (%d,%d) at %s", name, x, z,
-			minetest.pos_to_string(resolve(x, z))))
 end
 
 nodecore.register_playerstep({
