@@ -1,7 +1,7 @@
 -- LUALOCALS < ---------------------------------------------------------
-local assert, ipairs, math, minetest, next, nodecore, pairs, string,
+local assert, ipairs, math, minetest, nodecore, pairs, string,
       tonumber, vector
-    = assert, ipairs, math, minetest, next, nodecore, pairs, string,
+    = assert, ipairs, math, minetest, nodecore, pairs, string,
       tonumber, vector
 local math_floor, math_random, string_format, string_match
     = math.floor, math.random, string.format, string.match

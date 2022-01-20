@@ -21,7 +21,7 @@ numsetting("islands_ymin", 256 - api.islands_grid / 2)
 numsetting("islands_ymax", 256 + api.islands_grid / 2)
 numsetting("barrier_ymax", api.islands_ymin - 50)
 numsetting("barrier_ymin", api.islands_ymin - 100)
-numsetting("assign_ttl", 60)
+numsetting("assign_ttl", 3600)
 
 local perlins = {x = 0, y = 1, z = 2}
 minetest.after(0, function()
