@@ -18,20 +18,21 @@ nodecore.register_playerstep({
 			if data.sky and data.sky.textures then
 				local bot = data.sky.textures[2]
 				if bot then
-					local botred = bot
+					local botsized = bot
 					.. "^[resize:256x256"
+					local newbot = botsized
 					.. "^[multiply:#ff0000"
-					local newbot = botred
 					.. "^" .. png("swirl")
 
 					local s = api.get_island_ttl(data.pname)
 					/ api.assign_ttl
-					s = math_ceil(s * 16) * 4
+					s = math_ceil(s * 24) * 2
 					if s > 0 then
-						if s > 128 then s = 128 end
+						if s > 48 then s = 48 end
 						local o = 128 - s
 						local w = 2 * s
-						newbot = newbot .. "^(" .. botred
+						newbot = newbot .. "^(" .. botsized
+						.. "^[multiply:#ff4040"
 						.. "^[resize:256x256"
 						.. "^[mask:" .. esc(
 							"[combine:256x256:"
