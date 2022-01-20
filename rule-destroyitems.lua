@@ -15,7 +15,7 @@ local function destroycheck(getname)
 		if (not pos) or (pos.y >= api.barrier_ymax) then return end
 		local itemname = getname(self)
 		nodecore.log("action", string_format(
-				"%s %q at %s lost to the void",
+				"%s %q bursts at %s",
 				string_gsub(self.name, "__builtin:", ""),
 				itemname, minetest.pos_to_string(pos, 0)))
 		local def = minetest.registered_items[itemname]
