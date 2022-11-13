@@ -10,6 +10,21 @@ local api = _G[modname]
 
 local slices = api.schematic_slices
 
+function api.spawn_island(pos)
+	pos.y = pos.y - 1
+	pos.x = pos.x - 2
+	pos.z = pos.z - 2
+	minetest.place_schematic_on_vmanip(vm, pos,
+		nodecore.tree_schematic)
+	local isw = #slices[1]
+	local hisw = math_floor(isw / 2)
+	pos.x = pos.x - (hisw -2)
+	pos.z = pos.z - (hisw -2)
+	pos.y = pos.y + 1 - #slices
+	minetest.place_schematic_on_vmanip(vm, pos,
+		api.isle_schematic)
+end
+
 minetest.register_on_generated(function(minp, maxp)
 		if maxp.y < api.islands_ymin then return end
 		if minp.y > api.islands_ymax then return end
@@ -21,18 +36,7 @@ minetest.register_on_generated(function(minp, maxp)
 				for z = gmin.z, gmax.z, api.islands_grid do
 					local pos = api.island_near({x = x, y = y, z = z})
 					if pos and minetest.get_node(pos).name == "air" then
-						pos.y = pos.y - 1
-						pos.x = pos.x - 2
-						pos.z = pos.z - 2
-						minetest.place_schematic_on_vmanip(vm, pos,
-							nodecore.tree_schematic)
-						local isw = #slices[1]
-						local hisw = math_floor(isw / 2)
-						pos.x = pos.x - (hisw -2)
-						pos.z = pos.z - (hisw -2)
-						pos.y = pos.y + 1 - #slices
-						minetest.place_schematic_on_vmanip(vm, pos,
-							api.isle_schematic)
+						api.spawn_island(pos)
 					end
 				end
 			end
