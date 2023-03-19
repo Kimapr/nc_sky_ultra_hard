@@ -69,6 +69,7 @@ local function find_new_island_id()
 		local nxt = {}
 		for _, is in ipairs(q) do
 			if not ibpos[is] then return is end
+			seen[is] = true
 			local x, z = id_to_pos(is)
 			is = pos_to_id(x + 1, z)
 			if not seen[is] then nxt[#nxt + 1] = is end
