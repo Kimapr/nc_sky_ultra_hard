@@ -45,7 +45,7 @@ end
 minetest.register_chatcommand(cmdpref .. "_info", {
 		description = "access info about island/player ownership",
 		parameters = "[playername]",
-		privs = {[modname .. "_info"] = true},
+		privs = {[cmdpref .. "_info"] = true},
 		func = function(name, param)
 			if param ~= "" then
 				local ipos = api.player_to_island(param)
