@@ -64,5 +64,9 @@ function api.island_near(pos, adjust)
 	if ipos.y < api.islands_ymin or ipos.y > api.islands_ymax then return end
 	ipos.x = fixup(ipos.x, gpos.x)
 	ipos.z = fixup(ipos.z, gpos.z)
-	return ipos
+	return ipos, gpos, {
+		x = gpos.x + api.islands_grid - 1,
+		y = api.islands_ymax,
+		z = gpos.z + api.islands_grid - 1,
+	}
 end

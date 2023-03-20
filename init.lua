@@ -13,3 +13,5 @@ include("map-barrier")
 include("rule-destroyitems")
 include("rule-playerspawn")
 include("rule-skybox")
+
+include("admin-info")

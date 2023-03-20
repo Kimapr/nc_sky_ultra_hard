@@ -1,8 +1,8 @@
 -- LUALOCALS < ---------------------------------------------------------
 local assert, ipairs, math, minetest, nodecore, pairs, string,
-      tonumber, vector
+      tonumber, type, vector
     = assert, ipairs, math, minetest, nodecore, pairs, string,
-      tonumber, vector
+      tonumber, type, vector
 local math_floor, math_random, string_format, string_match
     = math.floor, math.random, string.format, string.match
 -- LUALOCALS > ---------------------------------------------------------
@@ -48,6 +48,30 @@ end
 local function unresolve(pos)
 	pos = api.island_grid_round(pos)
 	return pos.x / api.islands_grid, pos.z / api.islands_grid
+end
+
+function api.player_to_island(player)
+	local pname = type(player) == "string" and player or player:get_player_name()
+	local id = ibplr[pname]
+	if not id then return end
+	local x, z = id_to_pos(id)
+	return resolve(x, z)
+end
+
+function api.pos_to_owner(pos)
+	local x, z = unresolve(pos)
+	return ibpos[pos_to_id(x, z)]
+end
+
+function api.island_unassign(pos)
+	local x, z = unresolve(pos)
+	local id = pos_to_id(x, z)
+	local pname = ibpos[id]
+	if not pname then return end
+	local cur = ibplr[pname]
+	if cur == id then ibplr[pname] = nil end
+	ibpos[id] = nil
+	return dsave()
 end
 
 function api.send_to_island(player)
@@ -108,7 +132,7 @@ function api.give_island(player)
 		local x, z = id_to_pos(is)
 		nodecore.log("action", string_format("%s assigned to"
 				.. " island (%d,%d) at %s", name, x, z,
-				minetest.pos_to_string(resolve(x, z))))
+				minetest.pos_to_string(resolve(x, z), 0)))
 		ibplr[name] = is
 		ibpos[is] = name
 		tbplr[name] = nodecore.gametime + api.assign_ttl
