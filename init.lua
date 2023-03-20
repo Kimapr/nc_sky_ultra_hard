@@ -15,3 +15,4 @@ include("rule-playerspawn")
 include("rule-skybox")
 
 include("admin-info")
+include("admin-delete")
