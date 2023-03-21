@@ -59,8 +59,14 @@ do
 		end)
 end
 
+local function delmapchunk(pos)
+	return minetest.delete_area(pos, vector.add(pos, {
+		x = 79, y = 79, z = 79
+	}))
+end
+
 local deleting = {}
-function api.island_delete(pos, pname)
+local function island_delete(pos, pname, full)
 	if not pos then return false, "invalid pos" end
 	local ipos, minp, maxp = api.island_near(pos)
 	if not ipos then return false, "not an island" end
@@ -69,20 +75,36 @@ function api.island_delete(pos, pname)
 	if deleting[key] then return false, "already deleting " .. key end
 	deleting[key] = true
 
+	if not full then
+		minp = {
+			x = ipos.x - 32,
+			y = minp.y,
+			z = ipos.z - 32
+		}
+		max = {
+			x = ipos.x + 32,
+			y = ipos.y + 32,
+			z = ipos.z + 32
+		}
+	end
+
 	local start
+	local queueb4 = #queue
 	queue[#queue + 1] = function() start = minetest.get_us_time() / 1000000 end
 
 	local deferred = {}
 	-- scan downward due to liquid flow
-	for y = math_ceil((maxp.y + 32) / 16) * 16, math_floor((api.barrier_ymax - 8) / 16) * 16, -16 do
-		for x = math_ceil(minp.x / 16) * 16, math_floor(maxp.x / 16) * 16 do
-			for z = math_ceil(minp.z / 16) * 16, math_floor(maxp.z / 16) * 16 do
+	for y = math_ceil(maxp.y / 16) * 16, math_floor((api.barrier_ymax - 8) / 16) * 16, -16 do
+		for x = math_ceil(minp.x / 16) * 16, math_floor(maxp.x / 16) * 16, 16 do
+			for z = math_ceil(minp.z / 16) * 16, math_floor(maxp.z / 16) * 16, 16 do
 				local delpos = {x = x, y = y, z = z}
-				if vector.distance(delpos, ipos) < 32 then
+				if delpos.x >= ipos.x - 20 and delpos.x <= ipos.x + 4
+				and delpos.z >= ipos.z - 20 and delpos.z <= ipos.z + 4
+				and delpos.y >= ipos.y - 20 and delpos.y <= ipos.y + 20 then
 					deferred[#deferred + 1] = delpos
 					-- ALSO delete now, to handle liquids
 				end
-				queue[#queue + 1] = function() minetest.delete_area(delpos, delpos) end
+				queue[#queue + 1] = function() return minetest.delete_area(delpos, delpos) end
 			end
 		end
 	end
@@ -103,20 +125,30 @@ function api.island_delete(pos, pname)
 		nodecore.log("action", msg)
 		return minetest.chat_send_player(pname, msg)
 	end
-	return true, "queued deleting island at " .. key .. " ..."
+	return true, string_format("deleting island at %s: queued %d, deferred %d", key, #queue - queueb4, #deferred)
+end
+
+local function mkfunc(full)
+	return function(name, param)
+		param = minetest.string_to_pos(param)
+		if not param then
+			local player = minetest.get_player_by_name(name)
+			if not player then return false, "must be online to use without pos" end
+			param = player:get_pos()
+		end
+		return island_delete(param, name, full)
+	end
 end
 
 minetest.register_chatcommand(cmdpref .. "_delete", {
-		description = "access info about island/player ownership",
+		description = "destroy and reset an island (quick version)",
 		parameters = "[pos]",
 		privs = {[cmdpref .. "_delete"] = true},
-		func = function(name, param)
-			param = minetest.string_to_pos(param)
-			if not param then
-				local player = minetest.get_player_by_name(name)
-				if not player then return false, "must be online to use without pos" end
-				param = player:get_pos()
-			end
-			return api.island_delete(param, name)
-		end
+		func = mkfunc(false)
+	})
+minetest.register_chatcommand(cmdpref .. "_delete_full", {
+		description = "destroy and reset an island (full version)",
+		parameters = "[pos]",
+		privs = {[cmdpref .. "_delete"] = true},
+		func = mkfunc(true)
 	})
