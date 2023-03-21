@@ -16,3 +16,4 @@ include("rule-skybox")
 
 include("admin-info")
 include("admin-delete")
+include("admin-cycle")

@@ -74,6 +74,16 @@ function api.island_unassign(pos)
 	return dsave()
 end
 
+function api.island_next(pos)
+	local id = pos_to_id(unresolve(pos))
+	local min, mingt
+	for k in pairs(ibpos) do
+		if (not min) or (k < min) then min = k end
+		if k > id and ((not mingt) or (k < mingt)) then mingt = k end
+	end
+	return resolve(id_to_pos(mingt or min))
+end
+
 function api.send_to_island(player)
 	local x, z = id_to_pos(ibplr[player:get_player_name()])
 	for _, fx in pairs(nodecore.registered_healthfx) do
