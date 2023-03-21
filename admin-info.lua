@@ -33,10 +33,10 @@ local function getinfo(pos)
 		disp = "player deleted"
 	else
 		local cur = api.player_to_island(owner)
-		if cur and vector.equals(cur, ipos) then
-			disp = "home here"
+		if cur and postrim(cur) == postrim(ipos) then
+			disp = "HOME HERE"
 		else
-			disp = "home at " .. postrim(ipos)
+			disp = "home at " .. postrim(cur)
 		end
 	end
 	return true, string_format("%s owned by %q (%s)", pstr, owner, disp)
