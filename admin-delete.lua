@@ -99,11 +99,11 @@ function api.island_delete(pos, pname)
 	queue[#queue + 1] = function()
 		deleting[key] = nil
 		local finished = minetest.get_us_time() / 1000000
-		return minetest.chat_send_player(pname, string_format(
-				"deleted island %s in %0.2fs",
-				key, finished - start))
+		local msg = string_format("finished deleting island %s in %0.2fs", key, finished - start)
+		nodecore.log("action", msg)
+		return minetest.chat_send_player(pname, msg)
 	end
-	return true, "deleting island at " .. key .. " ..."
+	return true, "queued deleting island at " .. key .. " ..."
 end
 
 minetest.register_chatcommand(cmdpref .. "_delete", {
