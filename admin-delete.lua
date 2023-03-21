@@ -74,7 +74,7 @@ function api.island_delete(pos, pname)
 
 	local deferred = {}
 	-- scan downward due to liquid flow
-	for y = math_ceil((maxp.y + 1000) / 16) * 16, math_floor((api.barrier_ymax - 8) / 16) * 16, -16 do
+	for y = math_ceil((maxp.y + 32) / 16) * 16, math_floor((api.barrier_ymax - 8) / 16) * 16, -16 do
 		for x = math_ceil(minp.x / 16) * 16, math_floor(maxp.x / 16) * 16 do
 			for z = math_ceil(minp.z / 16) * 16, math_floor(maxp.z / 16) * 16 do
 				local delpos = {x = x, y = y, z = z}
@@ -103,7 +103,7 @@ function api.island_delete(pos, pname)
 				"deleted island %s in %0.2fs",
 				key, finished - start))
 	end
-	return true, "deleitng island at " .. key .. " ..."
+	return true, "deleting island at " .. key .. " ..."
 end
 
 minetest.register_chatcommand(cmdpref .. "_delete", {
